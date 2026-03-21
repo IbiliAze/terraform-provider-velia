@@ -1,6 +1,6 @@
 echo "provider_installation {
   dev_overrides {
-    "registry.terraform.io/eightmile/velia" = "$(pwd)"
+    "registry.terraform.io/ibiliaze/velia" = "$(pwd)"
   }
 
   direct {}

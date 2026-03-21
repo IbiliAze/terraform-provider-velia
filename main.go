@@ -11,7 +11,7 @@ import (
 func main() {
 
 	err := providerserver.Serve(context.Background(), provider.New, providerserver.ServeOpts{
-		Address: "registry.terraform.io/eightmile/velia",
+		Address: "registry.terraform.io/ibiliaze/velia",
 	})
 	if err != nil {
 		log.Fatal(err)

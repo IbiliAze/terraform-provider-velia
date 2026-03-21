@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     velia = {
-      source  = "eightmile/velia"
+      source  = "ibiliaze/velia"
       version = "0.0.1"
     }
   }
