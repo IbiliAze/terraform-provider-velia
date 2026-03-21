@@ -1,6 +1,5 @@
 package provider
 
-///////////////////////////////////////////////////////////////////////////////////MODULES
 import (
 	"context"
 	"fmt"
@@ -15,8 +14,6 @@ import (
 	stringplanmodifier "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-//////////////////////////////////////////////////////////////////////////////////////////
 
 var (
 	_ resource.Resource                = &CustomerContactResource{}
@@ -181,8 +178,6 @@ func (r *CustomerContactResource) Delete(ctx context.Context, req resource.Delet
 		resp.Diagnostics.AddError("Error deleting customer contact", err.Error())
 		return
 	}
-
-	// Successful delete: remove resource from state by not setting new state.
 }
 
 func (r *CustomerContactResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

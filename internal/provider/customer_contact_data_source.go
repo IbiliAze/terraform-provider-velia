@@ -1,6 +1,5 @@
 package provider
 
-///////////////////////////////////////////////////////////////////////////////////MODULES
 import (
 	"context"
 	"fmt"
@@ -12,8 +11,6 @@ import (
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-//////////////////////////////////////////////////////////////////////////////////////////
 
 var (
 	_ datasource.DataSource              = &CustomerContactDataSource{}

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     velia = {
       source  = "ibiliaze/velia"
-      version = "0.0.1"
+      version = "0.1.2"
     }
   }
 }
@@ -15,6 +15,12 @@ provider "velia" {
 resource "velia_customer_contact" "test" {
   email = "user@example.com"
   type  = "billing"
+}
+
+resource "velia_server_group" "test" {
+  name = "23"
+  color = "blue"
+  servers = ["123"]
 }
 
 output "contact_id" {
