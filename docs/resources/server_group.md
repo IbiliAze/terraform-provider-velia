@@ -13,10 +13,10 @@ Creates a server group in Velia.
 ## Example Usage
 
 ```terraform
-resource "velia_server_group" "test" {
-  name = "23"
-  color = "blue"
-  servers = ["123"]
+resource "velia_server_group" "example" {
+  name    = "web-servers"
+  color   = "#13355b"
+  servers = [12345, 12346]
 }
 ```
 
@@ -25,9 +25,9 @@ resource "velia_server_group" "test" {
 
 ### Required
 
-- `color` (String) Server group color.
+- `color` (String) Server group color (HTML5 hex color, e.g. #13355b).
 - `name` (String) Server group name.
-- `servers` (List of String) List of servers.
+- `servers` (List of Number) List of server IDs to include in the group.
 
 ### Read-Only
 

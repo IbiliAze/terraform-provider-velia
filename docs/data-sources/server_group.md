@@ -29,4 +29,4 @@ data "velia_server_group" "test" {
 
 - `color` (String) Server group color.
 - `name` (String) Server group name.
-- `servers` (List of String) List of servers.
+- `servers` (List of Number) List of server IDs in the group.

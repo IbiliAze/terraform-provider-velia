@@ -1,5 +1,5 @@
-resource "velia_server_group" "test" {
-  name = "23"
-  color = "blue"
-  servers = ["123"]
+resource "velia_server_group" "example" {
+  name    = "web-servers"
+  color   = "#13355b"
+  servers = [12345, 12346]
 }
