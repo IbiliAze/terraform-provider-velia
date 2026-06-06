@@ -18,9 +18,9 @@ resource "velia_customer_contact" "test" {
 }
 
 resource "velia_server_group" "test" {
-  name = "23"
-  color = "blue"
-  servers = ["123"]
+  name    = "23"
+  color   = "#13355b"
+  servers = [123]
 }
 
 output "contact_id" {

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/IbiliAze/terraform-provider-velia/internal/client"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -56,12 +57,12 @@ func (r *ServerGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"color": resourceSchema.StringAttribute{
 				Required:    true,
-				Description: "Server group color.",
+				Description: "Server group color (HTML5 hex color, e.g. #13355b).",
 			},
 			"servers": resourceSchema.ListAttribute{
 				Required:    true,
-				ElementType: types.StringType,
-				Description: "List of servers.",
+				ElementType: types.Int64Type,
+				Description: "List of server IDs to include in the group.",
 			},
 		},
 	}
@@ -92,9 +93,8 @@ func (r *ServerGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var servers []string
-	diags := plan.Servers.ElementsAs(ctx, &servers, false)
-	resp.Diagnostics.Append(diags...)
+	var servers []int64
+	resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &servers, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -109,16 +109,10 @@ func (r *ServerGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	serversList, diags := types.ListValueFrom(ctx, types.StringType, out.Servers)
+	state, diags := serverGroupToModel(ctx, out)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
-	}
-	state := ServerGroupResourceModel{
-		ID:      types.StringValue(strconv.FormatInt(out.ID, 10)),
-		Name:    types.StringValue(out.Name),
-		Color:   types.StringValue(out.Color),
-		Servers: serversList,
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -147,16 +141,10 @@ func (r *ServerGroupResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	serversList, diags := types.ListValueFrom(ctx, types.StringType, out.Servers)
+	newState, diags := serverGroupToModel(ctx, out)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
-	}
-	newState := ServerGroupResourceModel{
-		ID:      types.StringValue(strconv.FormatInt(out.ID, 10)),
-		Name:    types.StringValue(out.Name),
-		Color:   types.StringValue(out.Color),
-		Servers: serversList,
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
@@ -164,13 +152,46 @@ func (r *ServerGroupResource) Read(ctx context.Context, req resource.ReadRequest
 
 func (r *ServerGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan ServerGroupResourceModel
+	var state ServerGroupResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	id, err := strconv.ParseInt(state.ID.ValueString(), 10, 64)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Invalid group ID",
+			fmt.Sprintf("Expected numeric group ID, got %q: %s", state.ID.ValueString(), err.Error()),
+		)
+		return
+	}
+
+	var servers []int64
+	resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &servers, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	out, err := r.client.UpdateServerGroup(ctx, id, client.UpdateServerGroupRequest{
+		Name:    plan.Name.ValueString(),
+		Color:   plan.Color.ValueString(),
+		Servers: servers,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating server group", err.Error())
+		return
+	}
+
+	newState, diags := serverGroupToModel(ctx, out)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *ServerGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -190,10 +211,8 @@ func (r *ServerGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	_, err = r.client.DeleteServerGroup(ctx, id)
-	if err != nil {
+	if err := r.client.DeleteServerGroup(ctx, id); err != nil {
 		resp.Diagnostics.AddError("Error deleting server group", err.Error())
-		return
 	}
 }
 
@@ -209,4 +228,14 @@ func (r *ServerGroupResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(
 		resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...,
 	)
+}
+
+func serverGroupToModel(ctx context.Context, sg *client.ServerGroup) (ServerGroupResourceModel, diag.Diagnostics) {
+	serversList, d := types.ListValueFrom(ctx, types.Int64Type, sg.Servers)
+	return ServerGroupResourceModel{
+		ID:      types.StringValue(strconv.FormatInt(sg.ID, 10)),
+		Name:    types.StringValue(sg.Name),
+		Color:   types.StringValue(sg.Color),
+		Servers: serversList,
+	}, d
 }

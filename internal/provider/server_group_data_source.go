@@ -53,8 +53,8 @@ func (d *ServerGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"servers": datasourceSchema.ListAttribute{
 				Computed:    true,
-				ElementType: types.StringType,
-				Description: "List of servers.",
+				ElementType: types.Int64Type,
+				Description: "List of server IDs in the group.",
 			},
 		},
 	}
@@ -100,7 +100,7 @@ func (d *ServerGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	serversList, diags := types.ListValueFrom(ctx, types.StringType, out.Servers)
+	serversList, diags := types.ListValueFrom(ctx, types.Int64Type, out.Servers)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

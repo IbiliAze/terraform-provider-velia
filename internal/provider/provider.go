@@ -85,6 +85,8 @@ func (p *VeliaAPIProvider) DataSources(ctx context.Context) []func() datasource.
 	return []func() datasource.DataSource{
 		NewCustomerContactDataSource,
 		NewServerGroupDataSource,
+		NewServerDataSource,
+		NewNetworkDataSource,
 	}
 }
 
@@ -92,5 +94,8 @@ func (p *VeliaAPIProvider) Resources(ctx context.Context) []func() resource.Reso
 	return []func() resource.Resource{
 		NewCustomerContactResource,
 		NewServerGroupResource,
+		NewNetworkRdnsResource,
+		NewServerLabelResource,
+		NewTicketResource,
 	}
 }
